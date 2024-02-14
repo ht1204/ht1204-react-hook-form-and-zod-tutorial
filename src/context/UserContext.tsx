@@ -11,16 +11,25 @@ interface UserContextType {
   addUser: (user: User) => void;
 }
 
-//Complete the Context
-
+const UserContext = createContext<UserContextType>({
+  users: [],
+  addUser: () => {},
+});
 
 export const useUserContext = () => {
-
+  return useContext(UserContext);
 };
 
 export const UserProvider: FC = ({ children }) => {
- 
+  const [users, setUsers] = useState<User[]>([]);
+
+  const addUser = (user: User) => {
+    setUsers([...users, user]);
+  };
+
   return (
-    <></>
+    <UserContext.Provider value={{ users, addUser }}>
+      {children}
+    </UserContext.Provider>
   );
 };
