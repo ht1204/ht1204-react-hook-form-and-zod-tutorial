@@ -7,11 +7,9 @@ import { useUserContext } from "../../context/UserContext";
 const UserView: FC  = () => {
     const history = useNavigate();
     const { id } = useParams();
-    // Context should be here to check selected user data
-    const users: any[] = [];
+    const { users } = useUserContext();
 
-    // Catch the userId and find to show its data.
-    const userId = 0;
+    const userId = id ? +id : 0;
     const selectedUser = users.find((user) => user.id === userId);
 
     if (!selectedUser) {
@@ -19,7 +17,7 @@ const UserView: FC  = () => {
     }
 
     const handleGoBack = () => {
-        // Go to UserList
+        history(`/users/`);
     };
 
 

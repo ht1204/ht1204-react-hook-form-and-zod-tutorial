@@ -4,45 +4,42 @@ import { z } from "zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useUserContext } from "../../context/UserContext";
-
 import { tiers } from "../../assets/constants";
 
 
-/**
- * Create the Form schema considering the following:
- * - For accept, use literal and add the errorMap a callback with message "You must accept Terms and Conditions." 
- * - For tier: add string with invalid_type_error: "Please select a payment tier." 
- * 
- * Something like:
- 
- const FormSchema = z.object({
+const FormSchema = z.object({
   email: z.string().email(),
   accept: z.literal(true, {
-    errorMap: () => ({ message: "" }),
+    errorMap: () => ({ message: "You must accept Terms and Conditions." }),
   }),
   tier: z
-    .string({ invalid_type_error: "" })
+    .string({ invalid_type_error: "Please select a payment tier." })
     .refine((val) => tiers.map((tier) => tier.id).includes(val)),
 });
 
-Finally, create a FormSchemaType given the above, use typeof.
- */
-
-type FormSchemaType = z.infer<T>;
+type FormSchemaType = z.infer<typeof FormSchema>;
 
 const Form: FC = () => {
   const history = useNavigate();
-  // Context should be here
-  
-  /**
-   * Create the zod form validator
-   */
+  const { addUser, users } = useUserContext();
 
+  const {
+    register,
+    watch,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormSchemaType>({
+    resolver: zodResolver(FormSchema),
+  });
 
   const onSubmit: SubmitHandler<FormSchemaType> = async (data) => {
     await new Promise(async (resolve) => {
       await setTimeout(() => {
-          // Add a new user.
+        addUser({
+          id: users.length + 1,
+          email: data.email,
+          tier: data.tier,
+        });
 
         resolve(undefined);
       }, 3000);
@@ -67,13 +64,12 @@ const Form: FC = () => {
             <input
               type="text"
               className={`block border text-lg px-4 py-3 mt-2 rounded-lg border-gray-200 focus:bg-white text-gray-900 focus:border-blue-600 focus:ring-0 outline-none w-full  disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`}
-              {/*register email validation */}
-              disabled={}
+              {...register("email")}
+              disabled={isSubmitting}
             />
           </label>
-          {// Add email validation & error message 
-           (
-            <p className="text-sm text-red-600 mt-1">{}</p>
+          {errors.email && (
+            <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
           )}
         </div>
         <div>
@@ -81,14 +77,13 @@ const Form: FC = () => {
             <input
               type="checkbox"
               className="block border text-lg rounded w-6 h-6 border-gray-200 text-blue-600 focus:ring-0 focus:outline-none focus:ring-offset-0 disabled:text-gray-200 disabled:cursor-not-allowed"
-              {/*register accept validation */}
-              disabled={}
+              {...register("accept")}
+              disabled={isSubmitting}
             />
             <span className="block ml-4">I accept the Terms of Service</span>
           </label>
-          {// Add accept validation & error message 
-           (
-            <p className="text-sm text-red-600 mt-1">{}</p>
+          {errors.accept && (
+            <p className="text-sm text-red-600 mt-1">{errors.accept.message}</p>
           )}
         </div>
         <div>
@@ -118,8 +113,8 @@ const Form: FC = () => {
                         type="radio"
                         className="w-6 h-6 border ring-0 border-gray-200 text-blue-600 disabled:text-gray-300 outline-none focus:ring-0 focus:ring-offset-0 cursor-pointer"
                         value={tier.id}
-                        {/*register tier validation */}
-                        disabled={}
+                        {...register("tier")}
+                        disabled={isSubmitting}
                       />
                     </div>
                   </label>
@@ -128,17 +123,15 @@ const Form: FC = () => {
               );
             })}
           </ul>
-          {// Add tier validation & error message 
-          (
-            <p className="text-sm text-red-600 mt-1">{}</p>
+          {errors.tier && (
+            <p className="text-sm text-red-600 mt-1">{errors.tier.message}</p>
           )}
         </div>
-        {/*add watch to check the data is ready to submit through JSON.stringify */}
-        <pre>{}</pre>
+        <pre>{JSON.stringify(watch(), null, 2)}</pre>
         <button
           type="submit"
           className="w-full px-8 py-4 flex items-center justify-center uppercase text-white font-semibold bg-blue-600 rounded-lg disabled:bg-gray-100 disabled:text-gray-400"
-          disabled={}
+          disabled={isSubmitting}
         >
           Create account
         </button>

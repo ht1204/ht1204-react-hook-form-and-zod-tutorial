@@ -5,15 +5,14 @@ import { useUserContext } from "../../context/UserContext";
 
 const UserList: FC = () => {
     const history = useNavigate();
-    // Context should be here to map the added users
-    const users: any[] = [];
+    const { users } = useUserContext();
 
     const handleGoBack = () => {
-        // Go back to Form
+        history(`/`);
     };
 
     const handleUserClick = (userId: number) => {
-       // Go to selected user in table
+        history(`/users/${userId}`);
     };
 
     return (
